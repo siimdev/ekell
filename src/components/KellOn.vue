@@ -11,15 +11,43 @@ const updateTime = () => {
   liveTime.value = `${hours}:${minutes}:${seconds}`;
 };
 
-// Update time initially and then every second
 onMounted(() => {
+  // Update time initially and then every second
   updateTime();
   setInterval(updateTime, 1000);
+
+  // Initialize the countdown timer immediately when the component is created
+  updateTimeLeft();
+  // Update the countdown timer every second
+  setInterval(updateTimeLeft, 1000);
 });
 
-defineProps({
-  msg: String,
+const timeLeft = ref({
+  days: 0,
+  hours: 0,
+  minutes: 0,
+  seconds: 0,
 });
+
+function updateTimeLeft() {
+  const now = new Date();
+  const targetDate = new Date();
+
+  // Find next Friday
+  targetDate.setDate(now.getDate() + ((5 - now.getDay() + 7) % 7));
+  targetDate.setHours(17, 0, 0, 0); // 17:00 local time
+
+  const timeDifference = targetDate - now;
+
+  timeLeft.value = {
+    days: Math.floor(timeDifference / (1000 * 60 * 60 * 24)),
+    hours: Math.floor(
+      (timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+    ),
+    minutes: Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60)),
+    seconds: Math.floor((timeDifference % (1000 * 60)) / 1000),
+  };
+}
 </script>
 
 <template>
@@ -30,18 +58,31 @@ defineProps({
         <h2
           class="text-3xl text-gray-800 font-bold sm:text-5xl lg:text-6xl lg:leading-tight dark:text-gray-200"
         >
-          <span class="text-blue-500">{{ msg }}</span>
+          <span class="text-blue-500">Nädalavahetuseni jäänud</span>
         </h2>
       </div>
       <div class="relative mx-auto max-w-4xl grid space-y-5 sm:space-y-10">
         <!-- Title -->
-
         <div class="text-center">
-          <h1 class="mt-1 sm:mt-3 md:text-9xl text-8xl font-bold text-white">
-            <span
-              class="bg-clip-text bg-gradient-to-tr from-blue-600 to-purple-400 text-transparent"
-              >{{ liveTime }}</span
-            >
+          <h1
+            class="mt-1 sm:mt-3 text-8xl md:text-9xl font-bold bg-clip-text bg-gradient-to-tr from-blue-600 to-purple-400 text-transparent"
+          >
+            {{ timeLeft.days }} päeva
+          </h1>
+          <h1
+            class="mt-1 sm:mt-3 text-7xl md:text-8xl font-bold bg-clip-text bg-gradient-to-tr from-blue-600 to-purple-400 text-transparent"
+          >
+            {{ timeLeft.hours }} tundi
+          </h1>
+          <h1
+            class="mt-1 sm:mt-3 text-5xl md:text-6xl font-bold bg-clip-text bg-gradient-to-tr f from-blue-600 to-purple-400 text-transparent"
+          >
+            {{ timeLeft.minutes }} minutit
+          </h1>
+          <h1
+            class="mt-1 sm:mt-3 text-3xl md:text-4xl font-bold bg-clip-text bg-gradient-to-tr from-blue-600 to-purple-400 text-transparent"
+          >
+            {{ timeLeft.seconds }} sekundit
           </h1>
         </div>
         <!-- End Title -->
@@ -113,6 +154,26 @@ defineProps({
     </div>
   </div>
   <!-- End Hero -->
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="absolute bottom-0 inset-x-0 text-center py-5">
+    <div class="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8">
+      <p
+        class="text-sm lg:text-1xl text-gray-800 font-bold lg:leading-tight dark:text-gray-200"
+      >
+        <span class="text-blue-500">Kell praegu</span>
+      </p>
+      <h2
+        class="text-sm lg:text-3xl text-gray-800 font-bold lg:leading-tight dark:text-gray-200"
+      >
+        <span
+          class="bg-clip-text bg-gradient-to-tr from-blue-600 to-purple-400 text-transparent"
+          >{{ liveTime }}</span
+        >
+      </h2>
+    </div>
+  </footer>
+  <!-- ========== END FOOTER ========== -->
 </template>
 
 <style scoped></style>
