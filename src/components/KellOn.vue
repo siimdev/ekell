@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 
 const liveTime = ref("");
 
@@ -42,15 +42,23 @@ const progress = ref(0);
 
 function updateProgress() {
   const now = new Date();
-  const weekStart = new Date();
-  weekStart.setHours(0, 0, 0, 0); // Monday 00:00
-  const weekendStart = new Date();
-  weekendStart.setDate(
-    weekStart.getDate() + ((5 - weekStart.getDay() + 7) % 7)
-  );
+  const weekStart = new Date(now);
+  weekStart.setHours(0, 0, 0, 0); // Set to the beginning of the current day
+
+  // Find the Monday of the current week
+  const currentDay = weekStart.getDay();
+  const difference =
+    weekStart.getDate() - currentDay + (currentDay === 0 ? -6 : 1);
+  weekStart.setDate(difference);
+
+  // Find the Friday of the current week
+  const weekendStart = new Date(weekStart);
+  weekendStart.setDate(weekStart.getDate() + 4); // Friday of the current week
   weekendStart.setHours(17, 0, 0, 0); // Friday 17:00
 
+  // Calculate the total milliseconds between Monday 00:00 and Friday 17:00
   const totalWeekMilliseconds = weekendStart - weekStart;
+  // Calculate the current milliseconds between Monday 00:00 and now
   const currentMilliseconds = now - weekStart;
 
   // Calculate progress as a percentage
@@ -76,17 +84,16 @@ onMounted(() => {
 <template>
   <!-- Hero -->
   <div class="overflow-hidden">
-    <div class="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 py-20">
+    <div class="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 py-5">
       <div class="text-center">
         <h2
-          class="text-3xl text-gray-800 font-bold sm:text-5xl lg:text-6xl lg:leading-tight dark:text-gray-200 drop-shadow"
+          class="text-3xl font-bold sm:text-5xl lg:text-6xl lg:leading-tight drop-shadow bg-gradient-to-r from-violet-500 to-purple-500 bg-clip-text text-transparent"
         >
-          <span class="text-blue-500">Nädalavahetuseni jäänud</span>
+          Nädalavahetuseni jäänud
         </h2>
       </div>
       <div class="relative mx-auto max-w-4xl grid space-y-5 sm:space-y-10">
-        <!-- Title -->
-        <div class="text-center drop-shadow-md">
+        <div class="text-center drop-shadow">
           <h1
             class="mt-1 sm:mt-3 text-8xl md:text-9xl font-bold bg-clip-text bg-gradient-to-tr from-blue-600 to-purple-400 text-transparent"
           >
@@ -108,7 +115,6 @@ onMounted(() => {
             {{ timeLeft.seconds }} sekundit
           </h1>
         </div>
-        <!-- End Title -->
       </div>
     </div>
 
@@ -117,10 +123,10 @@ onMounted(() => {
         class="flex w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-700"
       >
         <div
-          class="flex flex-col justify-center overflow-hidden bg-blue-500"
+          class="flex flex-col justify-center overflow-hidden bg-gradient-to-l from-blue-500"
           role="progressbar"
-          style="width: 25%"
-          :aria-valuenow="progress"
+          :style="{ width: progress.toFixed(0) + '%' }"
+          :aria-valuenow="progress.toFixed(0)"
           aria-valuemin="0"
           aria-valuemax="100"
         ></div>
